@@ -1,4 +1,4 @@
-package com.converter.currency.vfaber;
+package com.converter.currency.vfaber.Code;
 
 import com.converter.currency.vfaber.exceptions.CurrencyException;
 import org.json.JSONObject;
@@ -19,6 +19,19 @@ public class Converter {
 
     private final Map<String, String> currencyCodeToNameMap = new HashMap<>();
     private final Map<String, String> currencyNameToCodeMap = new HashMap<>();
+
+    public Map<String, String> getCurrencyCodeToNameMap() {
+        return currencyCodeToNameMap;
+    }
+
+    public Map<String, String> getCurrencyNameToCodeMap() {
+        return currencyNameToCodeMap;
+    }
+
+    public void fillMaps() {
+        var currencies = getAvailableCurrencies();
+        mappingCurrencyNames(currencies);
+    }
 
     public String getAvailableCurrencies() {
         try (HttpClient client = HttpClient.newHttpClient()) {
