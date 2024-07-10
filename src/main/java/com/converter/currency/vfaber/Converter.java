@@ -1,5 +1,6 @@
 package com.converter.currency.vfaber;
 
+import com.converter.currency.vfaber.exceptions.CurrencyException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -16,23 +17,14 @@ import java.util.Map;
 
 public class Converter {
 
-    private Map<String, String> currencyCodeToNameMap = new HashMap<>();
-    private Map<String, String> currencyNameToCodeMap = new HashMap<>();
-
-
-    public void printCurrencyCodeMap() {
-        System.out.println(currencyCodeToNameMap.toString());
-    }
-
-    public void printCurrencyNameMap() {
-        System.out.println(currencyNameToCodeMap.toString());
-    }
+    private final Map<String, String> currencyCodeToNameMap = new HashMap<>();
+    private final Map<String, String> currencyNameToCodeMap = new HashMap<>();
 
     public String getAvailableCurrencies() {
         try (HttpClient client = HttpClient.newHttpClient()) {
-
+            String url = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.min.json";
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.min.json"))
+                    .uri(new URI(url))
                     .GET()
                     .build();
 
@@ -70,6 +62,7 @@ public class Converter {
 
         String input = getConversionsForSpecificCurrency(currencyCode);
 
+        assert input != null;
         JSONObject jsonObject = new JSONObject(input);
 
         JSONObject currencyObject = jsonObject.optJSONObject(currencyCode);
@@ -106,7 +99,7 @@ public class Converter {
 
     private String getCurrencyCode(String currencyName) {
         if (!currencyNameToCodeMap.containsKey(currencyName))
-            throw new RuntimeException("Currency not found: " + currencyName);
+            throw new CurrencyException("Currency not found: " + currencyName);
         return currencyNameToCodeMap.get(currencyName);
     }
 
