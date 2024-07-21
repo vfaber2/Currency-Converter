@@ -29,11 +29,16 @@ public class Converter {
     }
 
     public void fillMaps() {
-        var currencies = getAvailableCurrencies();
+        var currencies = requestAvailableCurrencies();
         mappingCurrencyNames(currencies);
     }
 
-    public String getAvailableCurrencies() {
+    /**
+     * Makes a request to get all the available currencies for conversion
+     *
+     * @return currency-names as string in JSON format
+     */
+    public String requestAvailableCurrencies() {
         try (HttpClient client = HttpClient.newHttpClient()) {
             String url = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.min.json";
             HttpRequest request = HttpRequest.newBuilder()
@@ -50,8 +55,13 @@ public class Converter {
         return null;
     }
 
-
-    private String getConversionsForSpecificCurrency(String currencyCode) {
+    /**
+     * Makes a request to get the conversion rates of a specific currency
+     *
+     * @param currencyCode code of the currency which will get converted
+     * @return conversions of the given currency
+     */
+    private String requestConversionsForSpecificCurrency(String currencyCode) {
 
         String url = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/" + currencyCode + ".min.json";
 
@@ -73,7 +83,7 @@ public class Converter {
 
     public Map<String, Double> createCurrencyConversionMap(String currencyCode) {
 
-        String input = getConversionsForSpecificCurrency(currencyCode);
+        String input = requestConversionsForSpecificCurrency(currencyCode);
 
         assert input != null;
         JSONObject jsonObject = new JSONObject(input);
@@ -92,6 +102,13 @@ public class Converter {
         return currencyConversionMap;
     }
 
+    /**
+     * Takes the JSON String of currencies and converts them into 2 maps:
+     * One currency-name to -code;
+     * One currency-code to -name
+     *
+     * @param currencies input string in JSON format
+     */
     public void mappingCurrencyNames(String currencies) {
         currencies = currencies.replace("{", "").replace("}", "");
 
@@ -110,19 +127,36 @@ public class Converter {
 
     }
 
-    private String getCurrencyCode(String currencyName) {
+    /**
+     * Converts currency-name to the matching currency-code
+     *
+     * @param currencyName name of the currency
+     * @return currency-code
+     */
+    private String convertCurrencyNameToCode(String currencyName) {
         if (!currencyNameToCodeMap.containsKey(currencyName))
             throw new CurrencyException("Currency not found: " + currencyName);
         return currencyNameToCodeMap.get(currencyName);
     }
 
+    /**
+     * Searches the exchange rate from a specific currency to another
+     *
+     * @param fromCurrencyCode currency you have
+     * @param toCurrencyCode   currency you want to convert to
+     * @return exchange rate between the 2 currencies
+     */
     public double getExchangeRate(String fromCurrencyCode, String toCurrencyCode) {
-
         var conversioonMap = createCurrencyConversionMap(fromCurrencyCode);
         return conversioonMap.get(toCurrencyCode);
-
     }
 
+    /**
+     * Calculates the conversion of the currency
+     * @param rate conversion rate
+     * @param amount amount of currency to convert
+     * @return amount of converted currency
+     */
     public double calculateConversion(double rate, double amount) {
         return amount * rate;
     }
@@ -130,10 +164,10 @@ public class Converter {
     public static void main(String[] args) {
         Converter converter = new Converter();
 
-        converter.mappingCurrencyNames(converter.getAvailableCurrencies());
+        converter.mappingCurrencyNames(converter.requestAvailableCurrencies());
 
-        String currencyCodeEuro = converter.getCurrencyCode("Euro");
-        String currencyCodeSwiss = converter.getCurrencyCode("Swiss Franc");
+        String currencyCodeEuro = converter.convertCurrencyNameToCode("Euro");
+        String currencyCodeSwiss = converter.convertCurrencyNameToCode("Swiss Franc");
 
         var exchangeRate = converter.getExchangeRate(currencyCodeEuro, currencyCodeSwiss);
 
