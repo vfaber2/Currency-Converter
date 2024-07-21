@@ -9,10 +9,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 
 public class Converter {
@@ -20,17 +17,12 @@ public class Converter {
     private final Map<String, String> currencyCodeToNameMap = new HashMap<>();
     private final Map<String, String> currencyNameToCodeMap = new HashMap<>();
 
-    public Map<String, String> getCurrencyCodeToNameMap() {
-        return currencyCodeToNameMap;
-    }
-
     public Map<String, String> getCurrencyNameToCodeMap() {
         return currencyNameToCodeMap;
     }
 
-    public void fillMaps() {
-        var currencies = requestAvailableCurrencies();
-        mappingCurrencyNames(currencies);
+    public Map<String, String> getSortedCurrencyCodeToNameMap() {
+        return new TreeMap<>(currencyNameToCodeMap);
     }
 
     /**
@@ -153,7 +145,8 @@ public class Converter {
 
     /**
      * Calculates the conversion of the currency
-     * @param rate conversion rate
+     *
+     * @param rate   conversion rate
      * @param amount amount of currency to convert
      * @return amount of converted currency
      */
@@ -161,20 +154,35 @@ public class Converter {
         return amount * rate;
     }
 
-    public static void main(String[] args) {
-        Converter converter = new Converter();
+    /**
+     * Initializes the converter, makes the request oof the currencies and fills the maps
+     */
+    public void init() {
+        currencyCodeToNameMap.clear();
+        currencyNameToCodeMap.clear();
 
-        converter.mappingCurrencyNames(converter.requestAvailableCurrencies());
-
-        String currencyCodeEuro = converter.convertCurrencyNameToCode("Euro");
-        String currencyCodeSwiss = converter.convertCurrencyNameToCode("Swiss Franc");
-
-        var exchangeRate = converter.getExchangeRate(currencyCodeEuro, currencyCodeSwiss);
-
-        var money = converter.calculateConversion(exchangeRate, 100);
-
-        System.out.println(money);
+        mappingCurrencyNames(requestAvailableCurrencies());
 
     }
 
+    /**
+     * Actual converter function
+     *
+     * @param fromCurrencyName starting currency
+     * @param toCurrencyName   resulting currency
+     * @param amount           amount of currency
+     * @return amount of converted currency
+     */
+    public double convert(String fromCurrencyName, String toCurrencyName, double amount) {
+
+        if (currencyNameToCodeMap.isEmpty() || currencyCodeToNameMap.isEmpty()) init();
+
+        String fromCurrencyCode = convertCurrencyNameToCode(fromCurrencyName);
+        String toCurrencyCode = convertCurrencyNameToCode(toCurrencyName);
+
+        double exchangeRate = getExchangeRate(fromCurrencyCode, toCurrencyCode);
+
+        return calculateConversion(exchangeRate, amount);
+
+    }
 }
