@@ -10,12 +10,15 @@ public class Gui {
     private Converter converter = new Converter();
 
     public void addItemsToSelector(JComboBox<String> sourceCurrency) {
-        if (converter.getCurrencyNameToCodeMap().isEmpty()) converter.fillMaps();
-        converter.getCurrencyNameToCodeMap().keySet().forEach(sourceCurrency::addItem);
+        if (converter.getCurrencyNameToCodeMap().isEmpty()) converter.init();
+        converter.getSortedCurrencyCodeToNameMap().keySet().forEach(sourceCurrency::addItem);
     }
+
 
     public static void main(String[] args) {
         Gui gui = new Gui();
+        Converter converter = new Converter();
+        converter.init();
 
         // Create the frame
         JFrame frame = new JFrame("Currency Converter");
@@ -25,12 +28,6 @@ public class Gui {
         // Create a panel to hold components
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-
-        // Text area for input JSON
-        JTextArea inputTextArea = new JTextArea(10, 40);
-        inputTextArea.setLineWrap(true);
-        JScrollPane inputScrollPane = new JScrollPane(inputTextArea);
-        panel.add(inputScrollPane, BorderLayout.NORTH);
 
         // Panel for currency selection and amount input
         JPanel middlePanel = new JPanel();
@@ -61,14 +58,28 @@ public class Gui {
         middlePanel.add(new JLabel()); // Empty label for spacing
         middlePanel.add(convertButton);
 
-        panel.add(middlePanel, BorderLayout.CENTER);
-
         // Text area for output result
         JTextArea outputTextArea = new JTextArea(5, 40);
         outputTextArea.setLineWrap(true);
         outputTextArea.setEditable(false);
         JScrollPane outputScrollPane = new JScrollPane(outputTextArea);
         panel.add(outputScrollPane, BorderLayout.SOUTH);
+
+        convertButton.addActionListener(e -> {
+            String sourceCurrencyName = (String) sourceCurrency.getSelectedItem();
+            String targetCurrencyName = (String) targetCurrency.getSelectedItem();
+            try {
+                double amount = Double.parseDouble(amountField.getText());
+                double result = converter.convert(sourceCurrencyName, targetCurrencyName, amount);
+                outputTextArea.setText(String.format("Converted Amount: %.4f %s", result, targetCurrencyName));
+            } catch (NumberFormatException ex) {
+                outputTextArea.setText("Please enter a valid amount.");
+            } catch (Exception ex) {
+                outputTextArea.setText("Error during conversion: " + ex.getMessage());
+            }
+        });
+
+        panel.add(middlePanel, BorderLayout.CENTER);
 
         // Add panel to frame
         frame.getContentPane().add(panel);
