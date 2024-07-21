@@ -22,7 +22,7 @@ public class Gui {
 
         // Create the frame
         JFrame frame = new JFrame("Currency Converter");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(600, 400);
 
         // Create a panel to hold components

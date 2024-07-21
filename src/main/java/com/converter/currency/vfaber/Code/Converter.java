@@ -41,7 +41,11 @@ public class Converter {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             return response.body();
-        } catch (IOException | InterruptedException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // Restore interrupted status
+            Thread.currentThread().interrupt();
             e.printStackTrace();
         }
         return null;
@@ -67,7 +71,11 @@ public class Converter {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             return response.body();
-        } catch (IOException | InterruptedException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // Restore interrupted status
+            Thread.currentThread().interrupt();
             e.printStackTrace();
         }
         return null;
